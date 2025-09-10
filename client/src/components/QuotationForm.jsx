@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import logo from '../assets/logo.png';
+import Swal from 'sweetalert2';
+import logo from '../assets/binarylogixlogo.png';
+import { FiEdit, FiX } from 'react-icons/fi';
 
 const QuotationForm = () => {
     const navigate = useNavigate();
@@ -9,6 +11,7 @@ const QuotationForm = () => {
     const [customerName, setCustomerName] = useState('');
     const [address, setAddress] = useState('');
     const [contactNo, setContactNo] = useState('');
+    const [serviceName, setserviceName] = useState('');
     const [items, setItems] = useState([{ details: '', quantity: '', unit: '', price: '' }]);
     const [terms, setTerms] = useState(`All quotations are valid for 30 days from the date of issue.
 Payment terms: 50% advance, 50% on delivery.
@@ -16,6 +19,9 @@ Prices mentioned are exclusive of taxes unless stated otherwise.
 Delivery timelines are estimates and may vary.
 Any modifications or additional work will be charged separately.
 By accepting this quotation, the customer agrees to our terms and conditions.`);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [tempTerms, setTempTerms] = useState(terms);
 
     const handleItemChange = (index, field, value) => {
         const newItems = [...items];
@@ -34,30 +40,59 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
 
     const totalAmount = items.reduce((sum, item) => sum + (item.quantity * item.price || 0), 0);
 
-    const handleDone = async () => {
+    const handleSubmit = async () => {
+        // 🔹 Validation
+        if (!customerName.trim() || !address.trim() || !contactNo.trim() || !serviceName.trim()) {
+            Swal.fire("Validation Error", "Please fill all required fields.", "error");
+            return;
+        }
+        if (contactNo.length !== 10) {
+            Swal.fire("Validation Error", "Contact number must be 10 digits.", "error");
+            return;
+        }
+        if (items.some(item => !item.details || !item.quantity || !item.unit || !item.price)) {
+            Swal.fire("Validation Error", "Please complete all item details.", "error");
+            return;
+        }
+
         try {
-            const response = await axios.post('http://localhost:5000/api/quotations', {
+            await axios.post('http://localhost:5000/api/quotations', {
                 customerName,
                 address,
                 contactNo,
+                serviceName,
                 items,
                 totalAmount,
                 terms
             });
 
-            navigate(`/quotation/${response.data._id}`);
+            Swal.fire("Success", "Quotation saved successfully!", "success");
+            navigate('/quolist');
         } catch (error) {
             console.error("Error saving quotation:", error);
-            alert("Failed to save quotation. Please try again.");
+            Swal.fire("Error", "Failed to save quotation. Please try again.", "error");
         }
+    };
+
+    const openModal = () => {
+        setTempTerms(terms);
+        setIsModalOpen(true);
+    };
+
+    const saveTerms = () => {
+        setTerms(tempTerms);
+        setIsModalOpen(false);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
     };
 
     return (
         <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md mt-8 font-sans text-sm">
-
             {/* Logo Section */}
             <div className="mb-6">
-                <img src={logo} alt="Company Logo" className="h-28 object-contain" />
+                <img src={logo} alt="Company Logo" className="h-18 object-contain" />
             </div>
 
             <h2 className="text-blue-600 font-bold text-3xl mb-6">Quotation</h2>
@@ -87,13 +122,29 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700">Contact No:</label>
+                        <label className="block text-gray-700">Contact No:</label> 
                         <input
                             type="text"
                             value={contactNo}
-                            onChange={e => setContactNo(e.target.value)}
+                            onChange={e => {
+                                const value = e.target.value.replace(/\D/g, "");
+                                if (value.length <= 10) {
+                                    setContactNo(value);
+                                }
+                            }}
+                            maxLength={10}
                             className="w-full border-b border-gray-400 focus:outline-none"
                             placeholder="Enter contact number"
+                        />
+                    </div>
+                    <div className="mt-4">
+                        <label className="block text-gray-700">Service :</label>
+                        <input
+                            type="text"
+                            value={serviceName}
+                            onChange={e => setserviceName(e.target.value)}
+                            className="w-full border-b border-gray-400 focus:outline-none"
+                            placeholder="Enter service name "
                         />
                     </div>
                 </div>
@@ -104,7 +155,7 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                         <label className="block text-gray-700">Quotation No:</label>
                         <input
                             type="text"
-                            value="BL001"
+                            value="Auto Generated"
                             readOnly
                             className="w-full border-b border-gray-400 bg-gray-100"
                         />
@@ -142,14 +193,17 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
             {/* Item Details */}
             <h3 className="text-blue-600 text-xl font-bold mb-4">Details</h3>
             {items.map((item, index) => (
-                <div key={index} className="border border-gray-300 rounded p-4 mb-4 text-sm relative">
-                    <button
-                        onClick={() => removeItem(index)}
-                        className="absolute top-1 right-1 text-black-500 hover:text-black-700"
-                        title="Remove Item"
-                    >
-                        X
-                    </button>
+                <div key={index} className="mb-4">
+                    <div className="flex justify-end items-center mb-1">
+                        <button
+                            onClick={() => removeItem(index)}
+                            className="text-gray-500 hover:text-gray-700"
+                            title="Remove Item"
+                        >
+                            <FiX size={18} />
+                        </button>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <input
                             type="text"
@@ -174,7 +228,7 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                         />
                         <input
                             type="number"
-                            placeholder="Price"
+                            placeholder="Price (in Rupees)"
                             value={item.price || ''}
                             onChange={e => handleItemChange(index, 'price', e.target.value)}
                             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -195,24 +249,55 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                 </div>
             </div>
 
-            {/* Done Button */}
+            {/* Submit Button */}
             <button
-                onClick={handleDone}
+                onClick={handleSubmit}
                 className="w-full bg-blue-500 text-white px-4 py-3 rounded hover:bg-blue-600 mb-6"
             >
-                Done
+                Submit
             </button>
 
-            {/* Editable Remarks / Terms & Conditions */}
-            <div className="border border-gray-300 rounded p-4 text-sm bg-gray-50">
-                <h3 className="text-blue-600 font-semibold mb-2">Remarks / Terms & Conditions</h3>
-                <textarea
-                    value={terms}
-                    onChange={(e) => setTerms(e.target.value)}
-                    className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                    rows={8}
-                />
+            {/* Terms & Conditions */}
+            <div className="border border-gray-300 rounded p-4 text-sm bg-gray-50 relative">
+                <h3 className="text-blue-600 font-semibold mb-2">Terms & Conditions</h3>
+                <div className="whitespace-pre-wrap text-gray-700">{terms}</div>
+                <button
+                    onClick={openModal}
+                    className="absolute top-4 right-4 text-blue-500 hover:text-blue-700"
+                    title="Edit Terms"
+                >
+                    <FiEdit size={20} />
+                </button>
             </div>
+
+            {/* Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded shadow-lg w-11/12 max-w-lg">
+                        <h3 className="text-blue-600 font-semibold mb-4">Edit Terms & Conditions</h3>
+                        <textarea
+                            value={tempTerms}
+                            onChange={e => setTempTerms(e.target.value)}
+                            className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                            rows={10}
+                        />
+                        <div className="flex justify-end mt-4 space-x-3">
+                            <button
+                                onClick={closeModal}
+                                className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveTerms}
+                                className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

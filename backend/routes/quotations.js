@@ -28,15 +28,17 @@ router.post('/', async (req, res) => {
             customerName,
             address,
             contactNo,
+            serviceName,
             companyName,
             email,
             contact,
             items,
-            totalAmount
+            totalAmount,
+             terms 
         } = req.body;
 
         // Validate required fields
-        if (!customerName || !address || !contactNo || !items || !totalAmount) {
+        if (!customerName || !address || !contactNo || !serviceName  || !items || !totalAmount || !terms) {
             return res.status(400).json({ message: "All required fields must be provided" });
         }
 
@@ -47,12 +49,14 @@ router.post('/', async (req, res) => {
             customerName,
             address,
             contactNo,
+            serviceName,
             quotationNo,
             companyName,
             email,
             contact,
             items,
-            totalAmount
+            totalAmount,
+             terms 
         });
 
         const savedQuotation = await newQuotation.save();
@@ -63,16 +67,16 @@ router.post('/', async (req, res) => {
     }
 });
 
-// // Get all quotations
-// router.get('/', async (req, res) => {
-//     try {
-//         const quotations = await Quotation.find().sort({ createdAt: -1 });
-//         res.status(200).json(quotations);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: "Server error" });
-//     }
-// });
+// Get all quotations
+router.get('/', async (req, res) => {
+    try {
+        const quotations = await Quotation.find().sort({ createdAt: 1 });
+        res.status(200).json(quotations);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 
 // Get a single quotation by ID
 router.get('/:id', async (req, res) => {
@@ -82,6 +86,22 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ message: "Quotation not found" });
         }
         res.status(200).json(quotation);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// DELETE /api/quotations/:id
+router.delete('/:id', async (req, res) => {
+    try {
+        const quotation = await Quotation.findById(req.params.id);
+        if (!quotation) {
+            return res.status(404).json({ message: "Quotation not found" });
+        }
+
+        await quotation.deleteOne(); 
+        res.status(200).json({ message: "Quotation deleted successfully" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
