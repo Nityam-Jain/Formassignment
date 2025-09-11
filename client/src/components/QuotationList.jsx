@@ -8,6 +8,10 @@ const QuotationList = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         const fetchQuotations = async () => {
             try {
@@ -22,8 +26,8 @@ const QuotationList = () => {
         fetchQuotations();
     }, []);
 
-    const handleEdit = (id) => {
-        navigate(`/edit-quotation/${id}`);
+    const handleEdit = (quotation) => {
+        navigate('/', { state: { quotation } });
     };
 
     const handleDelete = async (id) => {
@@ -38,6 +42,14 @@ const QuotationList = () => {
         }
     };
 
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentQuotations = quotations.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(quotations.length / itemsPerPage);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     if (loading) {
         return <p className="text-center mt-8">Loading...</p>;
     }
@@ -45,7 +57,6 @@ const QuotationList = () => {
     return (
         <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md mt-8 font-sans text-sm">
             <h2 className="text-blue-600 font-bold text-2xl mb-6">All Quotations</h2>
-
             <div className="overflow-x-auto">
                 <table className="w-full table-auto text-sm border-collapse">
                     <thead>
@@ -59,8 +70,8 @@ const QuotationList = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {quotations.length > 0 ? (
-                            quotations.map((q, index) => (
+                        {currentQuotations.length > 0 ? (
+                            currentQuotations.map((q, index) => (
                                 <tr
                                     key={q._id}
                                     className={`transition-shadow duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'
@@ -79,15 +90,13 @@ const QuotationList = () => {
                                         >
                                             <FiEye size={18} />
                                         </button>
-
                                         <button
-                                            onClick={() => handleEdit(q._id)}
+                                            onClick={() => handleEdit(q)}
                                             className="text-blue-600 hover:text-blue-700 p-2 rounded-md hover:bg-blue-100/80 transition-colors"
                                             title="Edit"
                                         >
                                             <FiEdit size={18} />
                                         </button>
-
                                         <button
                                             onClick={() => handleDelete(q._id)}
                                             className="text-red-600 hover:text-red-700 p-2 rounded-md hover:bg-red-100/80 transition-colors"
@@ -95,8 +104,6 @@ const QuotationList = () => {
                                         >
                                             <FiTrash2 size={18} />
                                         </button>
-
-
                                     </td>
                                 </tr>
                             ))
@@ -110,6 +117,21 @@ const QuotationList = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination */}
+            {quotations.length > itemsPerPage && (
+                <div className="flex justify-center mt-4 space-x-2">
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <button
+                            key={i + 1}
+                            onClick={() => paginate(i + 1)}
+                            className={`px-4 py-2 border rounded ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 hover:bg-blue-100'}`}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

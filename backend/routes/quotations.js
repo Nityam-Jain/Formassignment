@@ -108,4 +108,29 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// PUT /api/quotations/:id
+router.put('/:id', async (req, res) => {
+    try {
+        const quotation = await Quotation.findById(req.params.id);
+        if (!quotation) {
+            return res.status(404).json({ message: "Quotation not found" });
+        }
+
+        // Update fields from request body
+        quotation.customerName = req.body.customerName || quotation.customerName;
+        quotation.address = req.body.address || quotation.address;
+        quotation.contact = req.body.contact || quotation.contact;
+        quotation.items = req.body.items || quotation.items;
+        quotation.totalAmount = req.body.totalAmount || quotation.totalAmount;
+        // Add other fields as necessary
+
+        await quotation.save(); // Save the updated document
+        res.status(200).json({ message: "Quotation updated successfully", quotation });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+
 module.exports = router;

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import logo from '../assets/binarylogixlogo.png';
@@ -7,6 +7,8 @@ import { FiEdit, FiX } from 'react-icons/fi';
 
 const QuotationForm = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const quotationToEdit = location.state?.quotation || null;
 
     const [customerName, setCustomerName] = useState('');
     const [address, setAddress] = useState('');
@@ -19,9 +21,19 @@ Prices mentioned are exclusive of taxes unless stated otherwise.
 Delivery timelines are estimates and may vary.
 Any modifications or additional work will be charged separately.
 By accepting this quotation, the customer agrees to our terms and conditions.`);
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [tempTerms, setTempTerms] = useState(terms);
+
+    useEffect(() => {
+        if (quotationToEdit) {
+            setCustomerName(quotationToEdit.customerName);
+            setAddress(quotationToEdit.address);
+            setContactNo(quotationToEdit.contactNo);
+            setserviceName(quotationToEdit.serviceName);
+            setItems(quotationToEdit.items);
+            setTerms(quotationToEdit.terms);
+        }
+    }, [quotationToEdit]);
 
     const handleItemChange = (index, field, value) => {
         const newItems = [...items];
@@ -41,7 +53,6 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
     const totalAmount = items.reduce((sum, item) => sum + (item.quantity * item.price || 0), 0);
 
     const handleSubmit = async () => {
-        // 🔹 Validation
         if (!customerName.trim() || !address.trim() || !contactNo.trim() || !serviceName.trim()) {
             Swal.fire("Validation Error", "Please fill all required fields.", "error");
             return;
@@ -56,17 +67,31 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
         }
 
         try {
-            await axios.post('http://localhost:5000/api/quotations', {
-                customerName,
-                address,
-                contactNo,
-                serviceName,
-                items,
-                totalAmount,
-                terms
-            });
-
-            Swal.fire("Success", "Quotation saved successfully!", "success");
+            if (quotationToEdit) {
+                // Update existing quotation
+                await axios.put(`http://localhost:5000/api/quotations/${quotationToEdit._id}`, {
+                    customerName,
+                    address,
+                    contactNo,
+                    serviceName,
+                    items,
+                    totalAmount,
+                    terms
+                });
+                Swal.fire("Success", "Quotation updated successfully!", "success");
+            } else {
+                // Create new quotation
+                await axios.post('http://localhost:5000/api/quotations', {
+                    customerName,
+                    address,
+                    contactNo,
+                    serviceName,
+                    items,
+                    totalAmount,
+                    terms
+                });
+                Swal.fire("Success", "Quotation saved successfully!", "success");
+            }
             navigate('/quolist');
         } catch (error) {
             console.error("Error saving quotation:", error);
@@ -90,14 +115,10 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
 
     return (
         <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md mt-8 font-sans text-sm">
-            {/* Logo Section */}
             <div className="mb-6">
                 <img src={logo} alt="Company Logo" className="h-18 object-contain" />
             </div>
-
             <h2 className="text-blue-600 font-bold text-3xl mb-6">Quotation</h2>
-
-            {/* Customer & Company Details */}
             <div className="grid grid-cols-2 gap-8 mb-8">
                 <div>
                     <div className="text-blue-600 font-semibold mb-2">QUOTATION TO:</div>
@@ -148,7 +169,6 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                         />
                     </div>
                 </div>
-
                 <div>
                     <div className="text-blue-600 font-semibold mb-2">QUOTATION BY:</div>
                     <div className="mb-3">
@@ -189,8 +209,6 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     </div>
                 </div>
             </div>
-
-            {/* Item Details */}
             <h3 className="text-blue-600 text-xl font-bold mb-4">Details</h3>
             {items.map((item, index) => (
                 <div key={index} className="mb-4">
@@ -203,7 +221,6 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                             <FiX size={18} />
                         </button>
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <input
                             type="text"
@@ -236,7 +253,6 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     </div>
                 </div>
             ))}
-
             <div className="flex justify-between items-center mb-6">
                 <button
                     onClick={addItem}
@@ -248,16 +264,12 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     Total Amount: ₹{totalAmount}
                 </div>
             </div>
-
-            {/* Submit Button */}
             <button
                 onClick={handleSubmit}
                 className="w-full bg-blue-500 text-white px-4 py-3 rounded hover:bg-blue-600 mb-6"
             >
-                Submit
+                {quotationToEdit ? 'Update' : 'Submit'}
             </button>
-
-            {/* Terms & Conditions */}
             <div className="border border-gray-300 rounded p-4 text-sm bg-gray-50 relative">
                 <h3 className="text-blue-600 font-semibold mb-2">Terms & Conditions</h3>
                 <div className="whitespace-pre-wrap text-gray-700">{terms}</div>
@@ -269,8 +281,6 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     <FiEdit size={20} />
                 </button>
             </div>
-
-            {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-white p-6 rounded shadow-lg w-11/12 max-w-lg">
