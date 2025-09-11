@@ -67,9 +67,9 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
         }
 
         try {
+            let response;
             if (quotationToEdit) {
-                // Update existing quotation
-                await axios.put(`http://localhost:5000/api/quotations/${quotationToEdit._id}`, {
+                response = await axios.put(`http://localhost:5000/api/quotations/${quotationToEdit._id}`, {
                     customerName,
                     address,
                     contactNo,
@@ -79,9 +79,9 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     terms
                 });
                 Swal.fire("Success", "Quotation updated successfully!", "success");
+                navigate(`/quotation/${quotationToEdit._id}`);
             } else {
-                // Create new quotation
-                await axios.post('http://localhost:5000/api/quotations', {
+                response = await axios.post('http://localhost:5000/api/quotations', {
                     customerName,
                     address,
                     contactNo,
@@ -91,8 +91,9 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     terms
                 });
                 Swal.fire("Success", "Quotation saved successfully!", "success");
+                const newQuotationId = response.data._id;
+                navigate(`/quotation/${newQuotationId}`);
             }
-            navigate('/quolist');
         } catch (error) {
             console.error("Error saving quotation:", error);
             Swal.fire("Error", "Failed to save quotation. Please try again.", "error");
@@ -114,36 +115,36 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
     };
 
     return (
-        <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md mt-8 font-sans text-sm">
-            <div className="mb-6">
-                <img src={logo} alt="Company Logo" className="h-18 object-contain" />
+        <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow-md rounded-md mt-6 sm:mt-8 font-sans text-sm">
+            <div className="mb-6 flex justify-center">
+                <img src={logo} alt="Company Logo" className="h-16 object-contain" />
             </div>
-            <h2 className="text-blue-600 font-bold text-3xl mb-6">Quotation</h2>
-            <div className="grid grid-cols-2 gap-8 mb-8">
+            <h2 className="text-blue-600 font-bold text-2xl sm:text-3xl mb-6 text-center">Quotation</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
                     <div className="text-blue-600 font-semibold mb-2">QUOTATION TO:</div>
-                    <div className="mb-3">
-                        <label className="block text-gray-700">Customer Name:</label>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 mb-1">Customer Name:</label>
                         <input
                             type="text"
                             value={customerName}
                             onChange={e => setCustomerName(e.target.value)}
-                            className="w-full border-b border-gray-400 focus:outline-none"
+                            className="w-full border-b border-gray-400 focus:outline-none py-1"
                             placeholder="Enter name"
                         />
                     </div>
-                    <div className="mb-3">
-                        <label className="block text-gray-700">Address:</label>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 mb-1">Address:</label>
                         <input
                             type="text"
                             value={address}
                             onChange={e => setAddress(e.target.value)}
-                            className="w-full border-b border-gray-400 focus:outline-none"
+                            className="w-full border-b border-gray-400 focus:outline-none py-1"
                             placeholder="Enter address"
                         />
                     </div>
-                    <div>
-                        <label className="block text-gray-700">Contact No:</label> 
+                    <div className="mb-4">
+                        <label className="block text-gray-700 mb-1">Contact No:</label>
                         <input
                             type="text"
                             value={contactNo}
@@ -154,61 +155,63 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                                 }
                             }}
                             maxLength={10}
-                            className="w-full border-b border-gray-400 focus:outline-none"
+                            className="w-full border-b border-gray-400 focus:outline-none py-1"
                             placeholder="Enter contact number"
                         />
                     </div>
-                    <div className="mt-4">
-                        <label className="block text-gray-700">Service :</label>
+                    <div>
+                        <label className="block text-gray-700 mb-1">Service :</label>
                         <input
                             type="text"
                             value={serviceName}
                             onChange={e => setserviceName(e.target.value)}
-                            className="w-full border-b border-gray-400 focus:outline-none"
-                            placeholder="Enter service name "
+                            className="w-full border-b border-gray-400 focus:outline-none py-1"
+                            placeholder="Enter service name"
                         />
                     </div>
                 </div>
+
                 <div>
                     <div className="text-blue-600 font-semibold mb-2">QUOTATION BY:</div>
-                    <div className="mb-3">
-                        <label className="block text-gray-700">Quotation No:</label>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 mb-1">Quotation No:</label>
                         <input
                             type="text"
                             value="Auto Generated"
                             readOnly
-                            className="w-full border-b border-gray-400 bg-gray-100"
+                            className="w-full border-b border-gray-400 bg-gray-100 py-1"
                         />
                     </div>
-                    <div className="mb-3">
-                        <label className="block text-gray-700">Company Name:</label>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 mb-1">Company Name:</label>
                         <input
                             type="text"
                             value="Binarylogix Technologies"
                             readOnly
-                            className="w-full border-b border-gray-400 bg-gray-100"
+                            className="w-full border-b border-gray-400 bg-gray-100 py-1"
                         />
                     </div>
-                    <div className="mb-3">
-                        <label className="block text-gray-700">Email:</label>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 mb-1">Email:</label>
                         <input
                             type="email"
                             value="binarylogixofficial@gmail.com"
                             readOnly
-                            className="w-full border-b border-gray-400 bg-gray-100"
+                            className="w-full border-b border-gray-400 bg-gray-100 py-1"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700">Contact No:</label>
+                        <label className="block text-gray-700 mb-1">Contact No:</label>
                         <input
                             type="text"
                             value="9617189757"
                             readOnly
-                            className="w-full border-b border-gray-400 bg-gray-100"
+                            className="w-full border-b border-gray-400 bg-gray-100 py-1"
                         />
                     </div>
                 </div>
             </div>
+
             <h3 className="text-blue-600 text-xl font-bold mb-4">Details</h3>
             {items.map((item, index) => (
                 <div key={index} className="mb-4">
@@ -253,24 +256,25 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     </div>
                 </div>
             ))}
-            <div className="flex justify-between items-center mb-6">
+
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                 <button
                     onClick={addItem}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto"
                 >
                     + Add Item
                 </button>
-                <div className="text-lg font-semibold">
-                    Total Amount: ₹{totalAmount}
-                </div>
+                <div className="text-lg font-semibold">Total Amount: ₹{totalAmount}</div>
             </div>
+
             <button
                 onClick={handleSubmit}
                 className="w-full bg-blue-500 text-white px-4 py-3 rounded hover:bg-blue-600 mb-6"
             >
                 {quotationToEdit ? 'Update' : 'Submit'}
             </button>
-            <div className="border border-gray-300 rounded p-4 text-sm bg-gray-50 relative">
+
+            <div className="border border-gray-300 rounded p-4 text-sm bg-gray-50 relative mb-6">
                 <h3 className="text-blue-600 font-semibold mb-2">Terms & Conditions</h3>
                 <div className="whitespace-pre-wrap text-gray-700">{terms}</div>
                 <button
@@ -281,9 +285,10 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     <FiEdit size={20} />
                 </button>
             </div>
+
             {isModalOpen && (
-                <div className="fixed inset-0 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded shadow-lg w-11/12 max-w-lg">
+                <div className="fixed inset-0 flex justify-center items-center z-50 px-4">
+                    <div className="bg-white p-4 rounded shadow-lg w-full max-w-lg">
                         <h3 className="text-blue-600 font-semibold mb-4">Edit Terms & Conditions</h3>
                         <textarea
                             value={tempTerms}

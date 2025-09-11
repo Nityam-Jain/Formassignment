@@ -10,11 +10,11 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <Routes>
-        <Route path="/" element={<QuotationForm />} />
         <Route path="/quolist" element={<QuotationList />} />
+        <Route path="/" element={<QuotationForm />} />
         <Route path="/quotation/:id" element={<QuotationDetail />} />
       </Routes>
-      
+
       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
