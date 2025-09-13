@@ -3,6 +3,7 @@ import axios from "axios";
 import { FiEdit, FiTrash2, FiEye, FiDownload } from "react-icons/fi";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import Swal from 'sweetalert2';
 import QuotationForm from "../components/QuotationForm";
 import QuotationDetail from "../components/QuotationDetail";
 import logo from '../assets/binarylogixlogo.png';
@@ -40,16 +41,27 @@ const QuotationList = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this quotation?")) {
+
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
+        if (result.isConfirmed) {
             try {
                 await axios.delete(`http://localhost:5000/api/quotations/${id}`);
                 setQuotations(quotations.filter((q) => q._id !== id));
+                Swal.fire('Deleted!', 'The quotation has been deleted.', 'success');
             } catch (error) {
                 console.error("Error deleting quotation:", error);
-                alert("Failed to delete quotation.");
-            }
+                Swal.fire('Error!', 'Failed to delete quotation.', 'error');
+            } 
         }
-    };
+    };4 
 
     const handleView = (id) => {
         setSelectedQuotationId(id);

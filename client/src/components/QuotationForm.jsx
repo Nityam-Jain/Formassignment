@@ -22,6 +22,8 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
     // ✅ Modal for quotation detail after save/update
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedQuotationId, setSelectedQuotationId] = useState(null);
+    const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
 
     useEffect(() => {
         if (quotation) {
@@ -95,9 +97,14 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
         }
     };
 
-    const openTermsModal = () => setTempTerms(terms);
+    const openTermsModal = () => {
+        setTempTerms(terms);
+        setIsTermsModalOpen(true);
+    };
     const saveTerms = () => { setTerms(tempTerms); };
     const closeDetailModal = () => setIsDetailModalOpen(false);
+    const closeTermsModal = () => setIsTermsModalOpen(false);
+
 
     return (
         <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow-md rounded-md mt-6 sm:mt-8 font-sans text-sm">
@@ -210,6 +217,28 @@ By accepting this quotation, the customer agrees to our terms and conditions.`);
                     <FiEdit size={20} />
                 </button>
             </div>
+
+            {isTermsModalOpen && (
+                <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 px-2 sm:px-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-2xl">
+                        <h3 className="text-blue-600 font-semibold mb-4">Edit Terms & Conditions</h3>
+                        <textarea
+                            value={tempTerms}
+                            onChange={e => setTempTerms(e.target.value)}
+                            className="w-full h-40 border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+                        <div className="mt-4 flex justify-end gap-3">
+                            <button onClick={closeTermsModal} className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100">
+                                Cancel
+                            </button>
+                            <button onClick={() => { saveTerms(); closeTermsModal(); }} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
             {/* ✅ Detail Modal */}
             {isDetailModalOpen && (

@@ -5,7 +5,7 @@ import html2canvas from 'html2canvas';
 import logo from '../assets/binarylogixlogo.png';
 import logo2 from '../assets/binarylogixlogo2.png';
 import { Phone, Mail, MapPin } from 'lucide-react';
-
+   
 const QuotationDetail = ({ quotationId }) => {
     const [quotation, setQuotation] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -19,13 +19,14 @@ const QuotationDetail = ({ quotationId }) => {
                 const response = await axios.get(`http://localhost:5000/api/quotations/${quotationId}`);
                 setQuotation(response.data);
                 setLoading(false);
-            } catch (error) {
+            } catch (error) { 
                 console.error("Error fetching quotation:", error);
                 setLoading(false);
             }
         };
         fetchQuotation();
     }, [quotationId]);
+    
 
     if (loading) return <p className="text-center mt-8">Loading...</p>;
     if (!quotation) return <p className="text-center mt-8" style={{ color: "#EF4444" }}>Quotation not found.</p>;
